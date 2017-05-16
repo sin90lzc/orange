@@ -57,7 +57,7 @@ http {
         print(string.char(27) .. "[34m" .. "[INFO]" .. string.char(27).. "[0m", [[the env[ORANGE_CONF] is ]], env_orange_conf)
 
         local config_file = env_orange_conf or "./conf/orange.conf"
-        local config, store,localIP = orange.init({
+        local config, store = orange.init({
             config = config_file
         })
 
@@ -65,8 +65,7 @@ http {
         context = {
             orange = orange,
             store = store,
-            config = config,
-            localIP=localIP
+            config = config
         }
     }
 

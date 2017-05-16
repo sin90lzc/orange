@@ -7,7 +7,6 @@ require("orange.lib.globalpatches")()
 local utils = require("orange.utils.utils")
 local config_loader = require("orange.utils.config_loader")
 local dao = require("orange.store.dao")
-local socket = require("socket")
 
 local HEADERS = {
     PROXY_LATENCY = "X-Orange-Proxy-Latency",
@@ -49,17 +48,6 @@ local function now()
     return ngx.now() * 1000
 end
 
-local function getLocalIP()
-    local ip, resolved = socket.dns.toip(socket.dns.gethostname())
-    local localIP=resolved.ip[1]
-    if not resolved.ip[1] then
-        ngx.log(ngx.ERR,"can't resolve local ip address")
-        return nil
-    end
-    return "http://"..localIP
-    --return "http://127.0.0.1:8188"
-end
-
 -- ########################### Orange #############################
 local Orange = {}
 
@@ -86,14 +74,12 @@ function Orange.init(options)
         os.exit(1)
     end
 
-    local lip=getLocalIP()
-
     Orange.data = {
         store = store,
         config = config
     }
 
-    return config, store,lip
+    return config, store
 end
 
 function Orange.init_worker()
