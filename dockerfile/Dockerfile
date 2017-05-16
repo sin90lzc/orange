@@ -21,7 +21,6 @@ ADD docker-entrypoint.sh docker-entrypoint.sh
 RUN \
     chmod 755 docker-entrypoint.sh \
     && mv docker-entrypoint.sh /usr/local/bin \
-
     && yum-config-manager --add-repo https://openresty.org/yum/cn/centos/OpenResty.repo \
     && yum install -y epel-release \
     && yum install -y \
