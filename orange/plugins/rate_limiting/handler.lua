@@ -6,15 +6,8 @@ local utils = require("orange.utils.utils")
 local orange_db = require("orange.store.orange_db")
 local judge_util = require("orange.utils.judge")
 local BasePlugin = require("orange.plugins.base_handler")
-local counter = require("orange.plugins.rate_limiting.counter")
-
-local function get_current_stat(limit_key)
-    return counter.get(limit_key)
-end
-
-local function incr_stat(limit_key, limit_type)
-    counter.incr(limit_key, 1, limit_type)
-end
+--local counter = require("orange.plugins.rate_limiting.counter")
+local limit = require("orange.utils.limit")
 
 local function get_limit_type(period)
     if not period then return nil end
@@ -46,28 +39,30 @@ local function filter_rules(sid, plugin, ngx_var_uri)
             -- handle阶段
             local handle = rule.handle
             if pass then
-                local limit_type = get_limit_type(handle.period)
+                local limit_type = "Second" --get_limit_type(handle.period)
 
-                -- only work for valid limit type(1 second/minute/hour/day)
-                if limit_type then
-                    local current_timetable = utils.current_timetable()
-                    local time_key = current_timetable[limit_type]
-                    local limit_key = rule.id .. "#" .. time_key
-                    local current_stat = get_current_stat(limit_key) or 0
+                -- only work for valid limit type(1 second)
+                if handle.count then
+                    --local current_timetable = utils.current_timetable()
+                    --local time_key = current_timetable[limit_type]
+                    local limit_key = rule.id --.. "#" .. time_key
+                    --local current_stat = get_current_stat(limit_key) or 0
                         
-                    ngx.header["X-RateLimit-Limit" .. "-" .. limit_type] = handle.count
+                    --ngx.header["X-RateLimit-Limit" .. "-" .. limit_type] = handle.count
 
-                    if current_stat >= handle.count then
+                    local isLimit=limit.limit(limit_key,handle.count)
+
+                    if isLimit then
                         if handle.log == true then
-                            ngx.log(ngx.INFO, "[RateLimiting-Forbidden-Rule] ", rule.name, " uri:", ngx_var_uri, " limit:", handle.count, " reached:", current_stat, " remaining:", 0)
+                            ngx.log(ngx.INFO, "[RateLimiting-Forbidden-Rule] ", rule.name, " uri:", ngx_var_uri, " limit:", handle.count)
                         end
 
                         ngx.header["X-RateLimit-Remaining" .. "-" .. limit_type] = 0
                         ngx.exit(429)
                         return true
-                    else
-                        ngx.header["X-RateLimit-Remaining" .. "-" .. limit_type] = handle.count - current_stat - 1
-                        incr_stat(limit_key, limit_type)
+                   --else
+                        --ngx.header["X-RateLimit-Remaining" .. "-" .. limit_type] = handle.count - current_stat - 1
+                        --incr_stat(limit_key, limit_type)
 
                         -- only for test, comment it in production
                         -- if handle.log == true then

@@ -18,9 +18,9 @@ then
 	echo "start orange.."
 else
 	echo "kill "$pid
-	#kill -s QUIT $pid
-	nginx -p `pwd` -c ./conf/nginx.conf -s stop
-	echo "restart orange.."
+	kill -s QUIT $pid
+	#nginx -p `pwd` -c ./conf/nginx.conf -s stop
+	echo "orange stop.."
 fi
 
 mkdir -p logs

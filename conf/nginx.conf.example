@@ -1,37 +1,48 @@
 worker_processes  4;
-
+daemon on;
 events {
-    worker_connections  4096;
+    worker_connections  256;
+    multi_accept on;
 }
-
+worker_rlimit_nofile 256;
 # optional: path of orange.conf
 env ORANGE_CONF;
 
 http {
-    resolver 114.114.114.114; # replace it with your favorite config
+    #resolver 114.114.114.114; # replace it with your favorite config
     charset UTF-8;
     include ./mime.types;
+    
+    #client_max_body_size 0;
+    #underscores_in_headers on;
+
+    #real_ip_header X-Forwarded-For;
+    #set_real_ip_from 0.0.0.0/0;
+    #real_ip_recursive on;
 
     log_format  main '$remote_addr - $remote_user [$time_local] "$request" '
     '$status $body_bytes_sent "$http_referer" '
     '"$http_user_agent" "$http_x_forwarded_for"';
     access_log  ./logs/access.log  main;
-    error_log ./logs/error.log info;
+    error_log ./logs/error.log error;
 
     sendfile        on;
-    keepalive_timeout  65;
+    keepalive_timeout 65;
 
     upstream default_upstream {
         server localhost:8001;
+        keepalive 60;
     }
 
 
     #----------------------------Orange configuration-----------------------------
     lua_package_path '../?.lua;/usr/local/lor/?.lua;;';
-    lua_code_cache on;
-
+    #lua_code_cache on;
+    lua_max_running_timers 4096;
+    lua_max_pending_timers 16384;
+    lua_socket_pool_size 30;
+    lua_socket_log_errors off;
     lua_shared_dict orange_data 20m; # should not removed. used for orange data, e.g. plugins configurations..
-
     lua_shared_dict status 1m; # used for global statistic, see plugin: stat
     lua_shared_dict waf_status 1m; # used for waf statistic, see plugin: waf
     lua_shared_dict monitor 10m; # used for url monitor statistic, see plugin: monitor
@@ -46,7 +57,7 @@ http {
         print(string.char(27) .. "[34m" .. "[INFO]" .. string.char(27).. "[0m", [[the env[ORANGE_CONF] is ]], env_orange_conf)
 
         local config_file = env_orange_conf or "./conf/orange.conf"
-        local config, store = orange.init({
+        local config, store,localIP = orange.init({
             config = config_file
         })
 
@@ -54,7 +65,8 @@ http {
         context = {
             orange = orange,
             store = store,
-            config = config
+            config = config,
+            localIP=localIP
         }
     }
 
@@ -65,7 +77,7 @@ http {
 
     # main server
     server {
-        listen       80;
+        listen       8888;
         #server_name  my_domain.com;
 
         location = /favicon.ico {
@@ -75,20 +87,25 @@ http {
 
         location / {
             set $upstream_host $host;
-            set $upstream_url 'http://default_upstream';
+            set_by_lua $upstream_url 'return context.localIP';
+
+            #set $upstream_host '127.0.0.1';
+            #set $upstream_url 'http://127.0.0.1:8188';
+            #set $upstream_url 'http://default_upstream';
+
 
             rewrite_by_lua_block {
-                local orange = context.orange
+               local orange = context.orange
                 orange.redirect()
                 orange.rewrite()
             }
-
             access_by_lua_block {
                 local orange = context.orange
                 orange.access()
             }
 
             # proxy
+            proxy_http_version 1.1;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Scheme $scheme;
@@ -100,7 +117,6 @@ http {
                 local orange = context.orange
                 orange.header_filter()
             }
-
             body_filter_by_lua_block {
                 local orange = context.orange
                 orange.body_filter()
@@ -111,6 +127,10 @@ http {
                 orange.log()
             }
         }
+
+        #location /ppp {
+        #    return 200;
+        #}
 
         location /robots.txt {
             return 200 'User-agent: *\nDisallow: /';
@@ -126,14 +146,13 @@ http {
 
         location / {
             content_by_lua_block {
-                ngx.status = 404
-                ngx.say([[404! upstream not found. Host: ]] .. ngx.var.host .. "  URI: " .. ngx.var.uri)
+                ngx.status = 200
             }
         }
     }
 
 
-    # orange dashboard server
+    ## orange dashboard server
     server {
         listen       9999;
         stub_status on;
@@ -165,7 +184,7 @@ http {
         }
     }
 
-    # api server
+    ## api server
     server {
         listen       7777;
         #server_name  localhost;
@@ -188,5 +207,23 @@ http {
             }
         }
     }
+
+    # test
+    #server {
+    #    listen 8188;
+    #    server_name 192.168.38.195 localhost 127.0.0.1;
+    #    location / {
+    #        return 200 'test';
+    #    }
+    #}
+#
+    ##test gray
+    #server {
+    #    listen 8002;
+    #    server_name 192.168.38.195 localhost 127.0.0.1;
+    #    location / {
+    #        return 200 'gray';
+    #    }
+    #}
 
 }

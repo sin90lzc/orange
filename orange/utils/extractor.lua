@@ -48,6 +48,20 @@ local function extract_variable(extraction)
     elseif etype == "Method" then
         local method = ngx.req.get_method()
         result = string_lower(method)
+    elseif etype == "Cookie" then
+	local ngx_var=ngx.var
+	local cookie_value=ngx_var["cookie_"..extraction.name]
+	if not cookie_value then
+		return false
+	end
+	if not extraction.value then
+		return cookie_value;	
+	end
+        local m, err = ngx_re_match(cookie_value, extraction.value)
+        if not err and m and m[1] then
+		    ngx.log(ngx.DEBUG,"extract_value:"..m[1])
+            result = m[1] -- 提取第一个匹配的子模式
+        end
     end
 
     return result

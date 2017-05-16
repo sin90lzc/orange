@@ -127,7 +127,7 @@
                 var extraction_type = $(this).val();
 
                 if (extraction_type != "Header" && extraction_type != "Query"
-                    && extraction_type != "PostParams" && extraction_type != "URI") {
+                    && extraction_type != "PostParams" && extraction_type != "URI" && extraction_type!="Cookie") {
                     $(this).parents(".extraction-holder").each(function () {
                         $(this).find(".extraction-name-hodler").hide();
                     });
@@ -136,9 +136,18 @@
                         $(this).find(".extraction-name-hodler").show();
                     });
                 }
+                if (extraction_type!="Cookie") {
+                    $(this).parents(".extraction-holder").each(function () {
+                        $(this).find(".extraction-value-hodler").hide();
+                    });
+                } else {
+                    $(this).parents(".extraction-holder").each(function () {
+                        $(this).find(".extraction-value-hodler").show();
+                    });
+                }
 
                 //URI类型没有默认值选项
-                if(extraction_type=="URI"){
+                if(extraction_type=="URI"||extraction_type=="Cookie"){
                     $(this).parents(".extraction-holder").each(function () {
                         $(this).find("select[name=rule-extractor-extraction-has-default]").hide();
                         $(this).find("div[name=rule-extractor-extraction-default]").hide();
@@ -376,7 +385,7 @@
                 extraction.type = type;
 
                 //如果允许子key则提取
-                if (type == "Header" || type == "Query" || type == "PostParams"|| type == "URI") {
+                if (type == "Header" || type == "Query" || type == "PostParams"|| type == "URI"||type=="Cookie") {
                     var name = self.find("input[name=rule-extractor-extraction-name]").val();
                     if (!name) {
                         tmp_success = false;
@@ -395,7 +404,16 @@
                     }
                     extraction.default = default_value;
                 }
-
+		//如果允许value值则提取
+		var allow_value=(type=="Cookie");
+		if(allow_value){
+                   var value = self.find("input[name=rule-extractor-extraction-value]").val();
+		   if(!value){
+                        tmp_success = false;
+                        tmp_tip = "变量提取项的value字段不得为空";
+		   } 	
+                   extraction.value = value;
+		}
                 extractions.push(extraction);
             });
 
@@ -489,7 +507,7 @@
                 $(new_row).find("input[name=rule-extractor-extraction-default]").hide();
             }
 
-            if(old_type=="URI"){//如果拷贝的是URI类型，则不显示default
+            if(old_type=="URI"||old_type=="Cookie"){//如果拷贝的是URI类型，则不显示default
                 $(new_row).find("input[name=rule-extractor-extraction-default]").hide();
                 $(new_row).find("select[name=rule-extractor-extraction-has-default]").hide();
             }

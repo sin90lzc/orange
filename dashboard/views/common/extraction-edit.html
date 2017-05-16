@@ -35,21 +35,30 @@
                         <option value="URI" {@if c.type == "URI" } selected {@/if}>URI</option>
                         <option value="IP" {@if c.type == "IP" } selected {@/if}>IP</option>
                         <option value="Method" {@if c.type == "Method" } selected {@/if}>Method</option>
+                        <option value="Cookie" {@if c.type == "Cookie" } selected {@/if}>Cookie</option>
                     </select>
                 </div>
                 <div class="col-sm-2 extraction-name-hodler"
-                    {@if c.type!="Header"&&c.type!="Query"&&c.type!="PostParams"&&c.type!="URI" } 
+                    {@if c.type!="Header"&&c.type!="Query"&&c.type!="PostParams"&&c.type!="URI"&&c.type!="Cookie" } 
                         style="display:none;padding-left:0px;" 
                     {@else}
                         style="padding-left:0px;" 
                     {@/if}>
                     <input type="text" class="form-control" name="rule-extractor-extraction-name" placeholder="name" value="${c.name}">
                 </div>
+                <div class="col-sm-2 extraction-value-hodler"
+                    {@if c.type!="Cookie" } 
+                        style="display:none;padding-left:0px;" 
+                    {@else}
+                        style="padding-left:0px;" 
+                    {@/if}>
+                    <input type="text" class="form-control" name="rule-extractor-extraction-value" placeholder="value" value="${c.value}">
+                </div>
 
                 <!-- URI提取不提供默认值功能-->
                 <div class="col-sm-5 extraction-default-hodler" style="padding: 0px;">
                     <div class="col-sm-6" style="padding-left: 0px;">
-                        <select class="form-control" name="rule-extractor-extraction-has-default" {@if c.type=="URI"} style="display:none;" {@/if}>
+                        <select class="form-control" name="rule-extractor-extraction-has-default" {@if c.type=="URI"||c.type=="Cookie"} style="display:none;" {@/if}>
                             {@if c.default || c.default=="" }
                                 <option value="0">无默认值</option>
                                 <option value="1" selected>有默认值</option>
