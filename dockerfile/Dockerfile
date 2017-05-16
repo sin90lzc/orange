@@ -30,7 +30,7 @@ RUN \
         make \
         zip \
     && yum clean all \
-    && ln -s /usr/local/openresty/nginx/sbin/nginx  /sbin/nginx
+    && ln -s /usr/local/openresty/nginx/sbin/nginx /sbin/nginx \
     && cd /tmp \
     && curl -fSL https://github.com/sumory/lor/archive/v${LOR_VERSION}.tar.gz -o lor.tar.gz \
     && tar zxf lor.tar.gz \
