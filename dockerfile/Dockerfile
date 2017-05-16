@@ -64,4 +64,4 @@ RUN \
 EXPOSE 7777 8888 9999
 
 # Daemon
-ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["docker-entrypoint.sh"]
