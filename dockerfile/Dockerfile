@@ -30,7 +30,6 @@ RUN \
         openresty-resty \
         make \
         zip \
-
     && yum clean all \
     && ln -s /usr/local/openresty/nginx/sbin/nginx  /sbin/nginx
     && cd /tmp \
