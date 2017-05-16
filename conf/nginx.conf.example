@@ -1,5 +1,5 @@
 worker_processes  4;
-daemon on;
+
 events {
     worker_connections  256;
     multi_accept on;
@@ -30,7 +30,7 @@ http {
     keepalive_timeout 65;
 
     upstream default_upstream {
-        server localhost:8001;
+        server localhost:80;
         keepalive 60;
     }
 
@@ -87,12 +87,7 @@ http {
 
         location / {
             set $upstream_host $host;
-            set_by_lua $upstream_url 'return context.localIP';
-
-            #set $upstream_host '127.0.0.1';
-            #set $upstream_url 'http://127.0.0.1:8188';
-            #set $upstream_url 'http://default_upstream';
-
+            set $upstream_url 'http://default_upstream';
 
             rewrite_by_lua_block {
                local orange = context.orange
@@ -128,35 +123,15 @@ http {
             }
         }
 
-        #location /ppp {
-        #    return 200;
-        #}
-
         location /robots.txt {
             return 200 'User-agent: *\nDisallow: /';
         }
     }
 
-    # default upstream server
-    server {
-        listen 8001;
-        server_name localhost 127.0.0.1;
-        access_log ./logs/default_upstream_access.log main;
-        error_log ./logs/default_upstream_error.log;
-
-        location / {
-            content_by_lua_block {
-                ngx.status = 200
-            }
-        }
-    }
-
-
     ## orange dashboard server
     server {
         listen       9999;
         stub_status on;
-        #server_name  localhost;
         access_log ./logs/dashboard_access.log main;
         error_log ./logs/dashboard_error.log info;
 
@@ -187,7 +162,6 @@ http {
     ## api server
     server {
         listen       7777;
-        #server_name  localhost;
         access_log ./logs/api_access.log main;
         error_log ./logs/api_error.log info;
 
@@ -207,23 +181,5 @@ http {
             }
         }
     }
-
-    # test
-    #server {
-    #    listen 8188;
-    #    server_name 192.168.38.195 localhost 127.0.0.1;
-    #    location / {
-    #        return 200 'test';
-    #    }
-    #}
-#
-    ##test gray
-    #server {
-    #    listen 8002;
-    #    server_name 192.168.38.195 localhost 127.0.0.1;
-    #    location / {
-    #        return 200 'gray';
-    #    }
-    #}
 
 }
