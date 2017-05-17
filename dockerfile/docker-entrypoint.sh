@@ -1,7 +1,7 @@
 #!/bin/bash
 ORANGE_CONF="/usr/local/orange/conf/orange.conf"
 NGINX_CONF="/usr/local/orange/conf/nginx.conf"
-HOSTIP=$(echo /ifcfg-eth0 |awk -F= '/IPADDR/ {print $2}')
+HOSTIP=$(cat /ifcfg-eth0 |awk -F= '/IPADDR/ {print $2}')
 # DNS resolve for nginx and add the internal DNS
 grep nameserver /etc/resolv.conf >/etc/resolv.dnsmasq.conf
 dnsmasq
