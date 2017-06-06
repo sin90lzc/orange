@@ -61,6 +61,9 @@ RUN \
     && mkdir -p ${ORANGE_PATH}/logs \
     && chown -R www:www ${ORANGE_PATH}/*
 
+RUN ln -sf /dev/stdout /usr/local/orange/logs/access.log \
+	&& ln -sf /dev/stderr /usr/local/orange/logs/error.log
+
 EXPOSE 7777 8888 9999
 
 # Daemon
