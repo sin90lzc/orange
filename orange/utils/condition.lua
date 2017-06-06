@@ -9,7 +9,9 @@ local function assert_condition(real, operator, expected)
         ngx.log(ngx.DEBUG, string_format("assert_condition error: %s %s %s", real, operator, expected))
         return false
     end
-
+    if type(real)=="table" then
+	real=real[1]
+    end
     if operator == 'match' then
         if ngx_re_find(real, expected, 'isjo') ~= nil then
             return true

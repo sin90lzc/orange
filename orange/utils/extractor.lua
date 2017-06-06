@@ -54,8 +54,11 @@ local function extract_variable(extraction)
 	if not cookie_value then
 		return false
 	end
+	if type(cookie_value)=="table" then
+		cookie_value=cookie_value[1]
+	end
 	if not extraction.value then
-		return cookie_value;	
+		return cookie_value
 	end
         local m, err = ngx_re_match(cookie_value, extraction.value)
         if not err and m and m[1] then
