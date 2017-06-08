@@ -81,9 +81,7 @@ http {
     # main server
     server {
         listen          80 ;
-        listen          443 ssl http2 ;
-        ssl_certificate     SSL/lifesense.com.pem;
-        ssl_certificate_key SSL/lifesense.com.key;
+
 
         location = /favicon.ico {
             log_not_found off;
