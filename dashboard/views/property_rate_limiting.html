@@ -112,19 +112,22 @@
 
                 <div class="form-group handle-holder">
                     <label class="col-sm-1 control-label">处理</label>
-                    <div class="col-sm-3">
-                        <select class="form-control" id="rule-handle-period">
+                    <div class="col-sm-3 little_segment">
+                        <select class="form-control little_frame" id="rule-handle-period">
                             <option value="1">1秒</option>
                             <option value="60">1分钟</option>
                             <option value="3600">1小时</option>
                             <option value="86400">1天</option>
                         </select>
                     </div>
-                    <div class="col-sm-3">
-                         <input type="text" class="form-control" id="rule-handle-count" value="" placeholder="最多次数"/>
+                    <div class="col-sm-3 little_segment">
+                         <input type="text" class="form-control little_frame" id="rule-handle-warncount" value="" placeholder="告警次数"/>
                     </div>
-                    <div class="col-sm-3">
-                        <select class="form-control" id="rule-handle-log">
+                    <div class="col-sm-3 little_segment">
+                         <input type="text" class="form-control little_frame" id="rule-handle-count" value="" placeholder="最多次数"/>
+                    </div>
+                    <div class="col-sm-3 little_segment">
+                        <select class="form-control little_frame" id="rule-handle-log">
                             <option value="true">记录日志</option>
                             <option value="false">不记录日志</option>
                         </select>
@@ -160,20 +163,23 @@
 
                 <div class="form-group handle-holder">
                     <label class="col-sm-1 control-label">处理</label>
-                    <div class="col-sm-3">
-                        <select class="form-control" id="rule-handle-period">
+                    <div class="col-sm-3 little_segment">
+                        <select class="form-control little_frame" id="rule-handle-period">
                             <option value="1" {@if r.handle.period==1} selected {@/if}>1秒</option>
                             <option value="60" {@if r.handle.period==60} selected {@/if}>1分钟</option>
                             <option value="3600" {@if r.handle.period==3600} selected {@/if}>1小时</option>
                             <option value="86400" {@if r.handle.period==86400} selected {@/if}>1天</option>
                         </select>
                     </div>
-                    <div class="col-sm-3">
-                         <input type="text" class="form-control" id="rule-handle-count" value="${r.handle.count}" placeholder="最多次数"/>
+                    <div class="col-sm-3 little_segment">
+                         <input type="text" class="form-control little_frame" id="rule-handle-warncount" value="${r.handle.warncount}" placeholder="告警次数"/>
+                    </div>
+                    <div class="col-sm-3 little_segment">
+                         <input type="text" class="form-control little_frame" id="rule-handle-count" value="${r.handle.count}" placeholder="最多次数"/>
                     </div>
 
-                    <div class="col-sm-3">
-                        <select class="form-control" id="rule-handle-log">
+                    <div class="col-sm-3 little_segment">
+                        <select class="form-control little_frame" id="rule-handle-log">
                             <option value="true" {@if r.handle.log==true} selected {@/if}>记录日志</option>
                             <option value="false" {@if r.handle.log==false} selected {@/if}>不记录日志</option>
                         </select>

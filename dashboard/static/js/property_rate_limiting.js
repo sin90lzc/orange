@@ -109,6 +109,16 @@
             }
             handle.count = count;
 
+            var warncount = $("#rule-handle-warncount").val();
+            warncount = parseInt(warncount);
+            if(isNaN(warncount)){
+                console.log("告警次数输入错误：", warncount);
+                result.success = false;
+                result.data = "告警次数输入错误，须是整数";
+                return result;
+            }
+            handle.warncount = warncount;
+
             handle.log = ($("#rule-handle-log").val() === "true");
             result.success = true;
             result.handle = handle;
