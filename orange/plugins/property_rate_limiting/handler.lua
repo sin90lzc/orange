@@ -70,7 +70,7 @@ local function filter_rules(sid, plugin, ngx_var_uri)
                     end
                     if handle.count > 0 and currentValue >= handle.count then
                         if handle.log == true then
-                            ngx.log(ngx.WARN, "[RateLimiting-Forbidden-Rule] ", rule.name, " uri:", ngx_var_uri, " limit:", handle.count, " reached:", current_stat, " remaining:", 0," real_value:",real_value)
+                            ngx.log(ngx.WARN, "[RateLimiting-Forbidden-Rule] ", rule.name, " uri:", ngx_var_uri, " limit:", handle.count, " reached:", currentValue, " remaining:", 0," real_value:",real_value)
                         end
                         ngx.exit(429)
                         return true
