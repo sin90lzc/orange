@@ -42,11 +42,8 @@ function _M.set_json(key, value, expired)
 end
 
 function _M.incr(key, value, period)
-    local v = _M.get(key)
-    if not v then
-       _M.set(key, 0, EXPIRE_TIME[period])
-    end
-    return cache:incr(key, value)
+   -- 无需设置超时时间，由lru策略自动回收
+    return cache:incr(key, value,0)
 end
 
 function _M.delete(key)

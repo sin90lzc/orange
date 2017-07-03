@@ -21,6 +21,10 @@ function BasePlugin:redirect()
     ngx.log(ngx.DEBUG, " executing plugin \"", self._name, "\": redirect")
 end
 
+function BasePlugin:cors()
+    ngx.log(ngx.DEBUG, " executing plugin \"", self._name, "\": cors")
+end
+
 function BasePlugin:rewrite()
     ngx.log(ngx.DEBUG, " executing plugin \"", self._name, "\": rewrite")
 end
