@@ -501,7 +501,7 @@ function _M.load_data_by_mysql(store, plugin)
             return false
         end
 
-        if v == "stat" then
+        if v == "stat" or v == "cors" then
             return
         elseif v == "kvstore" then
             local init_enable = _M.init_enable_of_plugin(v, store)
