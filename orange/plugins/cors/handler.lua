@@ -24,7 +24,7 @@ function getRefererDomain(referers,origins)
     if type(rfs) == "table" then
         rfs = rfs[1]
     end
-    local regex = "https?://(.*?)/.*"
+    local regex = "(https?://.*?)/.*"
     local domain,err = ngx.re.match(rfs,regex)
     if not err and domain and domain[1] then
             return domain[1]
@@ -47,16 +47,12 @@ function CorsHandler:cors()
     local referers = ngx.req.get_headers()["Referer"]
     local origins = ngx.req.get_headers()["Origin"]
 
-    ngx.log(ngx.ERR,referers)
-
     ngx.header["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
     ngx.header["Access-Control-Allow-Headers"] = "Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type"
     ngx.header["Access-Control-Allow-Credentials"] = "true"
     
     local origin = getRefererDomain(referers,origins)
-    ngx.log(ngx.ERR,"origin:",origin)
     ngx.header["Access-Control-Allow-Origin"] = origin
-    
     return ngx.exit(ngx.HTTP_OK)
 end
 
