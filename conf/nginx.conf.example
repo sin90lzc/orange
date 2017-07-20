@@ -78,6 +78,7 @@ http {
         orange.init_worker()
     }
 
+
     # main server
     server {
         listen          80 ;
@@ -101,6 +102,7 @@ http {
 
             rewrite_by_lua_block {
                local orange = context.orange
+                orange.cors()
                 orange.redirect()
                 orange.rewrite()
             }
