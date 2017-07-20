@@ -8,10 +8,21 @@ local orange_db = require("orange.store.orange_db")
 local judge_util = require("orange.utils.judge")
 local BasePlugin = require("orange.plugins.base_handler")
 local plugin_config =  require("orange.plugins.property_rate_limiting.plugin")
---local counter = require("orange.plugins.property_rate_limiting.counter")
+local counter = require("orange.plugins.property_rate_limiting.counter")
 local extractor_util = require("orange.utils.extractor")
 
-local limit = require("orange.utils.limit")
+local function get_current_stat(limit_key)
+    return counter.get(limit_key)
+end
+
+local function incr_stat(limit_key, limit_type)
+    local newval,err,forcible=counter.incr(limit_key, 1, limit_type)
+    if not newval then
+        counter.delete(limit_key)
+        return 0
+    end
+    return newval
+end
 
 local function get_limit_type(period)
     if not period then return nil end
@@ -43,36 +54,26 @@ local function filter_rules(sid, plugin, ngx_var_uri)
             -- handle阶段
             local handle = rule.handle
             if pass then
-                local limit_type = "Second"
+                local limit_type = get_limit_type(handle.period)
 
                 -- only work for valid limit type(1 second/minute/hour/day)
-                if handle.count then
-                    --local current_timetable = utils.current_timetable()
-                    --local time_key = current_timetable[limit_type]
-                    local limit_key = rule.id .. "#" .. real_value
-                    --local current_stat = get_current_stat(limit_key) or 0
+                if limit_type then
+                    local current_timetable = utils.current_timetable()
+                    local time_key = current_timetable[limit_type]
+                    local limit_key = rule.id .. "#" .. time_key .. "#" .. real_value
+	            local currentValue = incr_stat(limit_key, limit_type)
 
-                    --ngx.header[plugin_config.plug_reponse_header_prefix .. limit_type] = handle.count
-
-                    local isLimit=limit.limit(limit_key,handle.count)
-
-                    if isLimit then
+                    if currentValue >= handle.warncount then
                         if handle.log == true then
-                            ngx.log(ngx.INFO, plugin_config.message_forbidden, rule.name, " uri:", ngx_var_uri, " limit:", handle.count)
+                            ngx.log(ngx.WARN, "[RateLimiting-Warn-Rule]", rule.name, " uri:", ngx_var_uri," warn-limit:",handle.warncount, " limit:", handle.count, " reached:", currentValue , " remaining:", handle.count-currentValue," real_value:",real_value)
                         end
-
-                        ngx.header[plugin_config.plug_reponse_header_prefix ..limit_type] = 0
+                    end
+                    if handle.count > 0 and currentValue >= handle.count then
+                        if handle.log == true then
+                            ngx.log(ngx.WARN, "[RateLimiting-Forbidden-Rule] ", rule.name, " uri:", ngx_var_uri, " limit:", handle.count, " reached:", currentValue, " remaining:", 0," real_value:",real_value)
+                        end
                         ngx.exit(429)
                         return true
-                    --else
-                        --return false
-                        --ngx.header[plugin_config.plug_reponse_header_prefix ..limit_type] = handle.count - current_stat - 1
-                        --incr_stat(limit_key, limit_type)
-
-                        -- only for test, comment it in production
-                        -- if handle.log == true then
-                        --     ngx.log(ngx.INFO, "[RateLimiting-Rule] ", rule.name, " uri:", ngx_var_uri, " limit:", handle.count, " reached:", current_stat + 1)
-                        -- end
                     end
                 end
             end -- end `pass`

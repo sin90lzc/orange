@@ -135,6 +135,17 @@ function Orange.rewrite()
     ngx.ctx.ORANGE_REWRITE_TIME = now_time - ngx.ctx.ORANGE_REWRITE_START
     ngx.ctx.ORANGE_REWRITE_ENDED_AT = now_time
 end
+function Orange.cors()
+    ngx.ctx.ORANGE_CORS_START = now()
+
+    for _, plugin in ipairs(loaded_plugins) do
+        plugin.handler:cors()
+    end
+
+    local now_time = now()
+    ngx.ctx.ORANGE_CORS_TIME = now_time - ngx.ctx.ORANGE_CORS_START
+    ngx.ctx.ORANGE_CORS_ENDED_AT = now_time
+end
 
 
 function Orange.access()

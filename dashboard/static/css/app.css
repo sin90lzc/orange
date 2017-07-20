@@ -1,3 +1,9 @@
+.little_frame{
+ width:90px;
+}
+.little_segment{
+ width:18%;
+}
 .center{
  text-align: center;
 }
