@@ -21,7 +21,7 @@ ADD docker-entrypoint.sh docker-entrypoint.sh
 RUN \
     chmod 755 docker-entrypoint.sh \
     && mv docker-entrypoint.sh /usr/local/bin \
-    %% apt-get update
+    %% apt-get update \
     && apt-get install -y \
         dnsmasq \
         unzip \
