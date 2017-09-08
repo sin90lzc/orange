@@ -21,7 +21,7 @@ ADD docker-entrypoint.sh docker-entrypoint.sh
 RUN \
     chmod 755 docker-entrypoint.sh \
     && mv docker-entrypoint.sh /usr/local/bin \
-    %% apt-get update \
+    && apt-get update -y \
     && apt-get install -y \
         dnsmasq \
         unzip \
@@ -55,9 +55,9 @@ RUN \
     && chown -R www:www ${ORANGE_PATH}/*
 
 RUN ln -sf /dev/stdout /usr/local/orange/logs/access.log \
-	&& ln -sf /dev/stderr /usr/local/orange/logs/error.log
+        && ln -sf /dev/stderr /usr/local/orange/logs/error.log
 
 EXPOSE 7777 8888 9999
 
 # Daemon
-CMD ["docker-entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
