@@ -24,7 +24,7 @@ function getRefererDomain(referers,origins)
     if type(rfs) == "table" then
         rfs = rfs[1]
     end
-    local regex = "(https?://.*?)/.*"
+    local regex = "(https?://[^/]+)/?.*"
     local domain,err = ngx.re.match(rfs,regex)
     if not err and domain and domain[1] then
             return domain[1]
