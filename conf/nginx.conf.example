@@ -1,10 +1,11 @@
 worker_processes  4;
-daemon on;
+
 events {
-    worker_connections  256;
+    worker_connections  65500;
     multi_accept on;
+    use   epoll;
 }
-worker_rlimit_nofile 256;
+worker_rlimit_nofile 100000;
 # optional: path of orange.conf
 env ORANGE_CONF;
 
@@ -12,8 +13,12 @@ http {
     #resolver 114.114.114.114; # replace it with your favorite config
     charset UTF-8;
     include ./mime.types;
-    
-    #client_max_body_size 0;
+    sendfile        on;
+    tcp_nopush      on;
+    tcp_nodelay     on;
+    server_tokens   off;
+
+    client_max_body_size 2m;
     #underscores_in_headers on;
 
     #real_ip_header X-Forwarded-For;
@@ -26,12 +31,11 @@ http {
     access_log  ./logs/access.log  main;
     error_log ./logs/error.log error;
 
-    sendfile        on;
     keepalive_timeout 65;
 
     upstream default_upstream {
-        server localhost:8001;
-        keepalive 60;
+        server localhost:81 ;
+        keepalive 1024;
     }
 
 
@@ -57,7 +61,7 @@ http {
         print(string.char(27) .. "[34m" .. "[INFO]" .. string.char(27).. "[0m", [[the env[ORANGE_CONF] is ]], env_orange_conf)
 
         local config_file = env_orange_conf or "./conf/orange.conf"
-        local config, store,localIP = orange.init({
+        local config, store = orange.init({
             config = config_file
         })
 
@@ -65,8 +69,7 @@ http {
         context = {
             orange = orange,
             store = store,
-            config = config,
-            localIP=localIP
+            config = config
         }
     }
 
@@ -75,10 +78,18 @@ http {
         orange.init_worker()
     }
 
+
     # main server
     server {
-        listen       8888;
-        #server_name  my_domain.com;
+        listen          80 ;
+        listen          443 ssl http2 ;
+        ssl_certificate     /etc/ssl/tls.crt;
+        ssl_certificate_key /etc/ssl/tls.key;
+		ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+		ssl_prefer_server_ciphers on;
+		ssl_ciphers 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4';        
+        ssl_session_cache shared:SSL:20m; 
+        ssl_session_timeout 60m;
 
         location = /favicon.ico {
             log_not_found off;
@@ -87,15 +98,11 @@ http {
 
         location / {
             set $upstream_host $host;
-            set_by_lua $upstream_url 'return context.localIP';
-
-            #set $upstream_host '127.0.0.1';
-            #set $upstream_url 'http://127.0.0.1:8188';
-            #set $upstream_url 'http://default_upstream';
-
+            set $upstream_url 'http://default_upstream';
 
             rewrite_by_lua_block {
                local orange = context.orange
+                orange.cors()
                 orange.redirect()
                 orange.rewrite()
             }
@@ -128,35 +135,15 @@ http {
             }
         }
 
-        #location /ppp {
-        #    return 200;
-        #}
-
         location /robots.txt {
             return 200 'User-agent: *\nDisallow: /';
         }
     }
 
-    # default upstream server
-    server {
-        listen 8001;
-        server_name localhost 127.0.0.1;
-        access_log ./logs/default_upstream_access.log main;
-        error_log ./logs/default_upstream_error.log;
-
-        location / {
-            content_by_lua_block {
-                ngx.status = 200
-            }
-        }
-    }
-
-
     ## orange dashboard server
     server {
         listen       9999;
         stub_status on;
-        #server_name  localhost;
         access_log ./logs/dashboard_access.log main;
         error_log ./logs/dashboard_error.log info;
 
@@ -187,7 +174,6 @@ http {
     ## api server
     server {
         listen       7777;
-        #server_name  localhost;
         access_log ./logs/api_access.log main;
         error_log ./logs/api_error.log info;
 
@@ -207,23 +193,5 @@ http {
             }
         }
     }
-
-    # test
-    #server {
-    #    listen 8188;
-    #    server_name 192.168.38.195 localhost 127.0.0.1;
-    #    location / {
-    #        return 200 'test';
-    #    }
-    #}
-#
-    ##test gray
-    #server {
-    #    listen 8002;
-    #    server_name 192.168.38.195 localhost 127.0.0.1;
-    #    location / {
-    #        return 200 'gray';
-    #    }
-    #}
 
 }

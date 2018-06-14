@@ -11,7 +11,8 @@
         "signature_auth",
         "waf",
         "divide",
-        "kvstore"
+        "kvstore",
+        "cors"
     ],
     "store": "mysql",
     "store_mysql": {
@@ -21,7 +22,7 @@
             "port": 3306,
             "database": "orange",
             "user": "root",
-            "password": "123",
+            "password": "",
             "max_packet_size": 1048576
         },
         "pool_config": {
